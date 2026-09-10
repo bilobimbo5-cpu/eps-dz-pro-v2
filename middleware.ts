@@ -62,7 +62,7 @@ export async function middleware(request: NextRequest) {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    if (profile && profile.onboarding_completed === false) {
+    if (!profile || profile.onboarding_completed === false) {
       return NextResponse.redirect(new URL("/onboarding", request.url));
     }
   }

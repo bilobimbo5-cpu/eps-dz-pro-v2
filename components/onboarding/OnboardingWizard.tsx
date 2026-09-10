@@ -128,16 +128,23 @@ export default function OnboardingWizard({
       if (userError) throw userError;
 
       // 2) تحديث/إنشاء ملف teacher_profiles
+      // ملاحظة: نحدّد onConflict على user_id صراحة (وليس المفتاح الأساسي id)
+      // لأن صف teacher_profiles يُنشأ تلقائيًا الآن منذ التسجيل عبر Postgres
+      // trigger — بدون هذا التحديد، upsert يحاول المطابقة على id فيفشل بتعارض
+      // فريد (unique violation) على user_id لأن الصف موجود مسبقًا.
       const { error: profileError } = await supabase
         .from("teacher_profiles")
-        .upsert({
-          user_id: userId,
-          wilaya: data.wilaya,
-          education_directorate: data.educationDirectorate,
-          phase: data.phase,
-          onboarding_completed: true,
-          onboarding_step: ONBOARDING_STEPS.length,
-        });
+        .upsert(
+          {
+            user_id: userId,
+            wilaya: data.wilaya,
+            education_directorate: data.educationDirectorate,
+            phase: data.phase,
+            onboarding_completed: true,
+            onboarding_step: ONBOARDING_STEPS.length,
+          },
+          { onConflict: "user_id" }
+        );
       if (profileError) throw profileError;
 
       // 3) إنشاء الموسم الدراسي

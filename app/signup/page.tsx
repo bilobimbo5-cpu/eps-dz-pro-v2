@@ -30,7 +30,7 @@ export default function SignupPage() {
 
     setLoading(true);
 
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -40,29 +40,19 @@ export default function SignupPage() {
 
     if (error) {
       setLoading(false);
+      console.error("Signup error:", error);
       toast.error(
         error.message.includes("already registered")
           ? "هذا البريد الإلكتروني مسجل مسبقًا"
-          : "حدث خطأ أثناء إنشاء الحساب"
+          : `خطأ: ${error.message}`
       );
       return;
     }
 
-    // إنشاء صف users + teacher_profiles المرتبط (يمكن أيضًا تنفيذه عبر Postgres trigger
-    // on auth.users insert لضمان الاتساق حتى لو فشل هذا الاستدعاء من العميل)
-    if (data.user) {
-      await supabase.from("users").insert({
-        id: data.user.id,
-        email,
-        full_name: fullName,
-        role: "teacher",
-      });
-      await supabase.from("teacher_profiles").insert({
-        user_id: data.user.id,
-        onboarding_completed: false,
-        onboarding_step: 1,
-      });
-    }
+    // ملاحظة: صفوف users وteacher_profiles تُنشأ تلقائيًا الآن عبر Postgres
+    // trigger (on_auth_user_created) فور نجاح التسجيل في auth.users — لا حاجة
+    // لإدراجها يدويًا من هنا، وهذا أكثر موثوقية من الاعتماد على استدعاء إضافي
+    // من المتصفح قد يفشل بصمت (كما كان يحدث سابقًا مع سياسة RLS الناقصة).
 
     setLoading(false);
     toast.success("تم إنشاء الحساب! تحقق من بريدك الإلكتروني لتأكيد الحساب");
