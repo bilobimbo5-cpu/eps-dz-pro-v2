@@ -1,0 +1,21 @@
+{
+  "name": "EPS DZ PRO",
+  "short_name": "EPS DZ PRO",
+  "description": "منصة أستاذ التربية البدنية والرياضية في الجزائر",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#158455",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
