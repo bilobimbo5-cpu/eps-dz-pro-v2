@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/settings/ProfileForm";
 import PasswordForm from "@/components/settings/PasswordForm";
 import SchoolYearArchive from "@/components/settings/SchoolYearArchive";
+import DeleteAccountSection from "@/components/settings/DeleteAccountSection";
 
 export default async function SettingsPage() {
   const supabase = createClient();
@@ -34,6 +35,8 @@ export default async function SettingsPage() {
       <PasswordForm />
 
       <SchoolYearArchive teacherId={user.id} />
+
+      <DeleteAccountSection />
     </div>
   );
 }

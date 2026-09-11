@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { createClient } from "@/lib/supabase/client";
 import Modal from "@/components/ui/Modal";
@@ -13,6 +13,22 @@ export type ClassFormValues = {
   student_count: number;
   notes: string;
 };
+
+function getDefaults(
+  initialValues: ClassFormValues | undefined,
+  schools: { id: string; name: string }[],
+  levels: { id: string; code: string; label_ar: string }[]
+): ClassFormValues {
+  return (
+    initialValues ?? {
+      name: "",
+      school_id: schools[0]?.id ?? "",
+      level_id: levels[0]?.id ?? "",
+      student_count: 0,
+      notes: "",
+    }
+  );
+}
 
 export default function ClassFormModal({
   open,
@@ -35,14 +51,19 @@ export default function ClassFormModal({
   const isEdit = Boolean(initialValues?.id);
 
   const [values, setValues] = useState<ClassFormValues>(
-    initialValues ?? {
-      name: "",
-      school_id: schools[0]?.id ?? "",
-      level_id: levels[0]?.id ?? "",
-      student_count: 0,
-      notes: "",
-    }
+    getDefaults(initialValues, schools, levels)
   );
+
+  // نعيد ضبط القيم في كل مرة يُفتح فيها النموذج — لأن هذا المكوّن يبقى
+  // "مُركَّبًا" (mounted) طوال الوقت في الصفحة الأم حتى عندما يكون مغلقًا،
+  // وقد تكون قوائم المؤسسات/المستويات فارغة بعد في أول تحميل للصفحة.
+  // بدون هذا، تبقى القيم الافتراضية فارغة حتى لو ظهرت محددة بصريًا في القائمة.
+  useEffect(() => {
+    if (open) {
+      setValues(getDefaults(initialValues, schools, levels));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
   const [saving, setSaving] = useState(false);
 
   function patch(p: Partial<ClassFormValues>) {

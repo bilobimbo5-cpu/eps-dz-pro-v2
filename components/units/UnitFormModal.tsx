@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { createClient } from "@/lib/supabase/client";
 import Modal from "@/components/ui/Modal";
@@ -16,6 +16,26 @@ export type UnitFormValues = {
   competency: string;
   sessions_count: number;
 };
+
+function getDefaults(
+  initialValues: UnitFormValues | undefined,
+  schoolYears: { id: string; label: string }[],
+  levels: { id: string; code: string; label_ar: string }[],
+  activities: { id: string; name: string }[]
+): UnitFormValues {
+  return (
+    initialValues ?? {
+      title: "",
+      school_year_id: schoolYears[0]?.id ?? "",
+      level_id: levels[0]?.id ?? "",
+      activity_id: activities[0]?.id ?? "",
+      term: 1,
+      objective: "",
+      competency: "",
+      sessions_count: 4,
+    }
+  );
+}
 
 export default function UnitFormModal({
   open,
@@ -40,17 +60,15 @@ export default function UnitFormModal({
   const isEdit = Boolean(initialValues?.id);
 
   const [values, setValues] = useState<UnitFormValues>(
-    initialValues ?? {
-      title: "",
-      school_year_id: schoolYears[0]?.id ?? "",
-      level_id: levels[0]?.id ?? "",
-      activity_id: activities[0]?.id ?? "",
-      term: 1,
-      objective: "",
-      competency: "",
-      sessions_count: 4,
-    }
+    getDefaults(initialValues, schoolYears, levels, activities)
   );
+
+  useEffect(() => {
+    if (open) {
+      setValues(getDefaults(initialValues, schoolYears, levels, activities));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
   const [saving, setSaving] = useState(false);
 
   function patch(p: Partial<UnitFormValues>) {

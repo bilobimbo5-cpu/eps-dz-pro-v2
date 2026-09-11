@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { createClient } from "@/lib/supabase/client";
 import Modal from "@/components/ui/Modal";
@@ -36,6 +36,19 @@ const EMPTY_VALUES: StudentFormValues = {
   notes: "",
 };
 
+function getDefaults(
+  initialValues: StudentFormValues | undefined,
+  defaultClassId: string | undefined,
+  classes: { id: string; name: string }[]
+): StudentFormValues {
+  return (
+    initialValues ?? {
+      ...EMPTY_VALUES,
+      class_id: defaultClassId ?? classes[0]?.id ?? "",
+    }
+  );
+}
+
 export default function StudentFormModal({
   open,
   onClose,
@@ -57,11 +70,15 @@ export default function StudentFormModal({
   const isEdit = Boolean(initialValues?.id);
 
   const [values, setValues] = useState<StudentFormValues>(
-    initialValues ?? {
-      ...EMPTY_VALUES,
-      class_id: defaultClassId ?? classes[0]?.id ?? "",
-    }
+    getDefaults(initialValues, defaultClassId, classes)
   );
+
+  useEffect(() => {
+    if (open) {
+      setValues(getDefaults(initialValues, defaultClassId, classes));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
   const [saving, setSaving] = useState(false);
 
   function patch(p: Partial<StudentFormValues>) {

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
-import { CheckCircle2, Crown } from "lucide-react";
+import { CheckCircle2, Crown, Clock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import UpgradeButton from "@/components/subscription/UpgradeButton";
 
 const PLAN_LABELS: Record<string, string> = { free: "مجاني", basic: "أساسي", pro: "احترافي" };
 const STATUS_LABELS: Record<string, string> = {
@@ -12,19 +13,19 @@ const STATUS_LABELS: Record<string, string> = {
 
 const PLANS = [
   {
-    key: "free",
+    key: "free" as const,
     name: "مجاني",
     price: "0 دج",
     features: ["إدارة مؤسسة واحدة وحتى 3 أقسام", "الحضور والتخطيط الأساسي", "5 وثائق شهريًا"],
   },
   {
-    key: "basic",
+    key: "basic" as const,
     name: "أساسي",
     price: "قريبًا",
     features: ["أقسام ومؤسسات غير محدودة", "كل أنواع الوثائق", "تصدير Excel/CSV", "دعم فني عبر البريد"],
   },
   {
-    key: "pro",
+    key: "pro" as const,
     name: "احترافي",
     price: "قريبًا",
     features: ["كل مزايا الأساسي", "المساعد الذكي بدون حدود", "أولوية الدعم الفني", "نسخ احتياطي متقدم"],
@@ -40,11 +41,12 @@ export default async function SubscriptionPage() {
 
   const { data: subscription } = await supabase
     .from("subscriptions")
-    .select("plan, status, payment_status, start_date, end_date")
+    .select("plan, status, payment_status, start_date, end_date, requested_plan, upgrade_requested_at")
     .eq("teacher_id", user.id)
     .maybeSingle();
 
   const currentPlan = subscription?.plan ?? "free";
+  const requestedPlan = subscription?.requested_plan ?? null;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -74,6 +76,12 @@ export default async function SubscriptionPage() {
             تنتهي في {new Date(subscription.end_date).toLocaleDateString("ar-DZ")}
           </p>
         )}
+        {requestedPlan && (
+          <div className="mt-3 flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+            <Clock size={14} />
+            طلبت الترقية إلى &quot;{PLAN_LABELS[requestedPlan]}&quot; — بانتظار موافقة الإدارة
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -100,19 +108,29 @@ export default async function SubscriptionPage() {
                   </li>
                 ))}
               </ul>
-              <button
-                disabled={isCurrent || plan.key !== "free"}
-                className="btn-secondary mt-5 disabled:opacity-60"
-              >
-                {isCurrent ? "الخطة الحالية" : "قريبًا"}
-              </button>
+
+              {isCurrent ? (
+                <button disabled className="btn-secondary mt-5 disabled:opacity-60">
+                  الخطة الحالية
+                </button>
+              ) : plan.key === "free" ? (
+                <button disabled className="btn-secondary mt-5 disabled:opacity-60">
+                  خطة أساسية
+                </button>
+              ) : (
+                <UpgradeButton
+                  planKey={plan.key}
+                  planLabel={plan.name}
+                  alreadyRequested={requestedPlan === plan.key}
+                />
+              )}
             </div>
           );
         })}
       </div>
 
       <p className="text-center text-xs text-gray-400">
-        وسائل الدفع الجزائرية ستُضاف في تحديث قادم. البنية التحتية للاشتراكات جاهزة الآن لاستقبالها.
+        الدفع الفعلي عبر وسائل جزائرية غير مفعّل بعد — طلب الترقية يُرسَل للإدارة للمعالجة يدويًا حاليًا.
       </p>
     </div>
   );

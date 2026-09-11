@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { createClient } from "@/lib/supabase/client";
 import { ALGERIA_WILAYAS } from "@/lib/constants/wilayas";
@@ -17,6 +17,24 @@ export type SchoolFormValues = {
   email: string;
   school_year_id: string;
 };
+
+function getDefaults(
+  initialValues: SchoolFormValues | undefined,
+  schoolYears: { id: string; label: string }[]
+): SchoolFormValues {
+  return (
+    initialValues ?? {
+      name: "",
+      address: "",
+      commune: "",
+      wilaya: "",
+      director_name: "",
+      phone: "",
+      email: "",
+      school_year_id: schoolYears[0]?.id ?? "",
+    }
+  );
+}
 
 export default function SchoolFormModal({
   open,
@@ -37,17 +55,15 @@ export default function SchoolFormModal({
   const isEdit = Boolean(initialValues?.id);
 
   const [values, setValues] = useState<SchoolFormValues>(
-    initialValues ?? {
-      name: "",
-      address: "",
-      commune: "",
-      wilaya: "",
-      director_name: "",
-      phone: "",
-      email: "",
-      school_year_id: schoolYears[0]?.id ?? "",
-    }
+    getDefaults(initialValues, schoolYears)
   );
+
+  useEffect(() => {
+    if (open) {
+      setValues(getDefaults(initialValues, schoolYears));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
   const [saving, setSaving] = useState(false);
 
   function patch(p: Partial<SchoolFormValues>) {

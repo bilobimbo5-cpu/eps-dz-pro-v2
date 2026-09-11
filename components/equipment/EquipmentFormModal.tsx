@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { createClient } from "@/lib/supabase/client";
 import Modal from "@/components/ui/Modal";
@@ -24,6 +24,24 @@ const CONDITION_LABELS: Record<EquipmentFormValues["condition"], string> = {
   needs_repair: "بحاجة إلى إصلاح",
 };
 
+function getDefaults(
+  initialValues: EquipmentFormValues | undefined,
+  schools: { id: string; name: string }[]
+): EquipmentFormValues {
+  return (
+    initialValues ?? {
+      name: "",
+      type: "",
+      quantity: 1,
+      condition: "good",
+      storage_location: "",
+      acquisition_date: "",
+      school_id: schools[0]?.id ?? "",
+      notes: "",
+    }
+  );
+}
+
 export default function EquipmentFormModal({
   open,
   onClose,
@@ -43,17 +61,15 @@ export default function EquipmentFormModal({
   const isEdit = Boolean(initialValues?.id);
 
   const [values, setValues] = useState<EquipmentFormValues>(
-    initialValues ?? {
-      name: "",
-      type: "",
-      quantity: 1,
-      condition: "good",
-      storage_location: "",
-      acquisition_date: "",
-      school_id: schools[0]?.id ?? "",
-      notes: "",
-    }
+    getDefaults(initialValues, schools)
   );
+
+  useEffect(() => {
+    if (open) {
+      setValues(getDefaults(initialValues, schools));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
   const [saving, setSaving] = useState(false);
 
   function patch(p: Partial<EquipmentFormValues>) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { createClient } from "@/lib/supabase/client";
 import Modal from "@/components/ui/Modal";
@@ -20,6 +20,22 @@ const TYPE_LABELS: Record<EvaluationFormValues["eval_type"], string> = {
   formative: "تكويني",
   summative: "ختامي",
 };
+
+function getDefaults(
+  initialValues: EvaluationFormValues | undefined,
+  classes: { id: string; name: string }[]
+): EvaluationFormValues {
+  return (
+    initialValues ?? {
+      title: "",
+      class_id: classes[0]?.id ?? "",
+      activity_id: "",
+      eval_type: "formative",
+      term: "",
+      eval_date: new Date().toISOString().slice(0, 10),
+    }
+  );
+}
 
 export default function EvaluationFormModal({
   open,
@@ -42,15 +58,15 @@ export default function EvaluationFormModal({
   const isEdit = Boolean(initialValues?.id);
 
   const [values, setValues] = useState<EvaluationFormValues>(
-    initialValues ?? {
-      title: "",
-      class_id: classes[0]?.id ?? "",
-      activity_id: "",
-      eval_type: "formative",
-      term: "",
-      eval_date: new Date().toISOString().slice(0, 10),
-    }
+    getDefaults(initialValues, classes)
   );
+
+  useEffect(() => {
+    if (open) {
+      setValues(getDefaults(initialValues, classes));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
   const [saving, setSaving] = useState(false);
 
   function patch(p: Partial<EvaluationFormValues>) {

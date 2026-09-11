@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { createClient } from "@/lib/supabase/client";
 import Modal from "@/components/ui/Modal";
@@ -24,6 +24,22 @@ const DIFFICULTY_LABELS: Record<ActivityFormValues["difficulty"], string> = {
   hard: "صعب",
 };
 
+function getDefaults(initialValues: ActivityFormValues | undefined): ActivityFormValues {
+  return (
+    initialValues ?? {
+      name: "",
+      domain: "",
+      level_id: "",
+      objective: "",
+      skills: "",
+      equipment_needed: "",
+      duration_minutes: 30,
+      difficulty: "medium",
+      pedagogical_notes: "",
+    }
+  );
+}
+
 export default function ActivityFormModal({
   open,
   onClose,
@@ -42,19 +58,17 @@ export default function ActivityFormModal({
   const supabase = createClient();
   const isEdit = Boolean(initialValues?.id);
 
-  const [values, setValues] = useState<ActivityFormValues>(
-    initialValues ?? {
-      name: "",
-      domain: "",
-      level_id: "",
-      objective: "",
-      skills: "",
-      equipment_needed: "",
-      duration_minutes: 30,
-      difficulty: "medium",
-      pedagogical_notes: "",
+  const [values, setValues] = useState<ActivityFormValues>(getDefaults(initialValues));
+
+  // نعيد ضبط القيم عند كل فتح للنموذج — هذا يصلح أيضًا مشكلة ظهور بيانات
+  // العنصر الذي عُدِّل سابقًا عند فتح النموذج لتعديل عنصر آخر (لأن هذا
+  // المكوّن يبقى "مُركَّبًا" طوال الوقت ولا يُعيد تشغيل useState تلقائيًا).
+  useEffect(() => {
+    if (open) {
+      setValues(getDefaults(initialValues));
     }
-  );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
   const [saving, setSaving] = useState(false);
 
   function patch(p: Partial<ActivityFormValues>) {

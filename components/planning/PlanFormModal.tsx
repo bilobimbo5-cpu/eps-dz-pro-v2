@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { createClient } from "@/lib/supabase/client";
 import Modal from "@/components/ui/Modal";
@@ -29,6 +29,24 @@ const MONTHS = [
   "جويلية", "أوت", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر",
 ];
 
+function getDefaults(
+  initialValues: PlanFormValues | undefined,
+  schoolYears: { id: string; label: string }[]
+): PlanFormValues {
+  return (
+    initialValues ?? {
+      plan_type: "annual",
+      school_year_id: schoolYears[0]?.id ?? "",
+      level_id: "",
+      class_id: "",
+      term: "",
+      month: "",
+      title: "",
+      notes: "",
+    }
+  );
+}
+
 export default function PlanFormModal({
   open,
   onClose,
@@ -52,17 +70,15 @@ export default function PlanFormModal({
   const isEdit = Boolean(initialValues?.id);
 
   const [values, setValues] = useState<PlanFormValues>(
-    initialValues ?? {
-      plan_type: "annual",
-      school_year_id: schoolYears[0]?.id ?? "",
-      level_id: "",
-      class_id: "",
-      term: "",
-      month: "",
-      title: "",
-      notes: "",
-    }
+    getDefaults(initialValues, schoolYears)
   );
+
+  useEffect(() => {
+    if (open) {
+      setValues(getDefaults(initialValues, schoolYears));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
   const [saving, setSaving] = useState(false);
 
   function patch(p: Partial<PlanFormValues>) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { createClient } from "@/lib/supabase/client";
 import Modal from "@/components/ui/Modal";
@@ -18,6 +18,23 @@ export type ExerciseFormValues = {
   instructions: string;
   success_criteria: string;
 };
+
+function getDefaults(initialValues: ExerciseFormValues | undefined): ExerciseFormValues {
+  return (
+    initialValues ?? {
+      name: "",
+      activity_id: "",
+      level_id: "",
+      objective: "",
+      student_count: 20,
+      equipment_needed: "",
+      duration_minutes: 10,
+      organization: "",
+      instructions: "",
+      success_criteria: "",
+    }
+  );
+}
 
 export default function ExerciseFormModal({
   open,
@@ -39,20 +56,14 @@ export default function ExerciseFormModal({
   const supabase = createClient();
   const isEdit = Boolean(initialValues?.id);
 
-  const [values, setValues] = useState<ExerciseFormValues>(
-    initialValues ?? {
-      name: "",
-      activity_id: "",
-      level_id: "",
-      objective: "",
-      student_count: 20,
-      equipment_needed: "",
-      duration_minutes: 10,
-      organization: "",
-      instructions: "",
-      success_criteria: "",
+  const [values, setValues] = useState<ExerciseFormValues>(getDefaults(initialValues));
+
+  useEffect(() => {
+    if (open) {
+      setValues(getDefaults(initialValues));
     }
-  );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
   const [saving, setSaving] = useState(false);
 
   function patch(p: Partial<ExerciseFormValues>) {
