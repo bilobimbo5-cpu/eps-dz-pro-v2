@@ -3,15 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { CreditCard } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function UpgradeButton({
   planKey,
   planLabel,
+  priceLabel,
   alreadyRequested,
 }: {
   planKey: "basic" | "pro";
   planLabel: string;
+  priceLabel: string;
   alreadyRequested: boolean;
 }) {
   const supabase = createClient();
@@ -30,21 +33,25 @@ export default function UpgradeButton({
       return;
     }
 
-    toast.success(`تم إرسال طلب الترقية إلى "${planLabel}" — ستتم مراجعته من الإدارة قريبًا`);
+    toast.success(
+      `تم تسجيل طلبك لخطة "${planLabel}" (${priceLabel}). سنتواصل معك لإتمام الدفع بالبطاقة الذهبية يدويًا حتى تفعيل الدفع الآلي`,
+      { duration: 6000 }
+    );
     router.refresh();
   }
 
   if (alreadyRequested) {
     return (
       <button disabled className="btn-secondary mt-5 disabled:opacity-70">
-        طلب الترقية قيد المراجعة
+        طلبك قيد المعالجة — سنتواصل معك
       </button>
     );
   }
 
   return (
     <button onClick={handleRequest} disabled={loading} className="btn-primary mt-5">
-      {loading ? "جارٍ الإرسال..." : "طلب الترقية"}
+      <CreditCard size={16} className="ml-1" />
+      {loading ? "جارٍ الإرسال..." : `اشترك الآن — ${priceLabel}`}
     </button>
   );
 }

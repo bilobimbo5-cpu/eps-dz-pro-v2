@@ -21,13 +21,13 @@ const PLANS = [
   {
     key: "basic" as const,
     name: "أساسي",
-    price: "قريبًا",
+    price: "1000 دج/سنة",
     features: ["أقسام ومؤسسات غير محدودة", "كل أنواع الوثائق", "تصدير Excel/CSV", "دعم فني عبر البريد"],
   },
   {
     key: "pro" as const,
     name: "احترافي",
-    price: "قريبًا",
+    price: "1200 دج/سنة",
     features: ["كل مزايا الأساسي", "المساعد الذكي بدون حدود", "أولوية الدعم الفني", "نسخ احتياطي متقدم"],
   },
 ];
@@ -121,6 +121,7 @@ export default async function SubscriptionPage() {
                 <UpgradeButton
                   planKey={plan.key}
                   planLabel={plan.name}
+                  priceLabel={plan.price}
                   alreadyRequested={requestedPlan === plan.key}
                 />
               )}
@@ -130,7 +131,9 @@ export default async function SubscriptionPage() {
       </div>
 
       <p className="text-center text-xs text-gray-400">
-        الدفع الفعلي عبر وسائل جزائرية غير مفعّل بعد — طلب الترقية يُرسَل للإدارة للمعالجة يدويًا حاليًا.
+        الدفع الآلي بالبطاقة الذهبية (Edahabia) وCIB قادم قريبًا. حاليًا، بعد
+        الضغط على "اشترك الآن" سيتواصل معك فريق EPS DZ PRO لإتمام الدفع يدويًا
+        وتفعيل خطتك خلال وقت قصير.
       </p>
     </div>
   );
